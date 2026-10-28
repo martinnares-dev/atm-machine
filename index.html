@@ -4,7 +4,227 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATM Machine</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #07152d;
+            color: #f1f5f9;
+            min-height: 100vh;
+            padding: 25px 15px;
+        }
+
+        .atm-container {
+            max-width: 900px;
+            margin: auto;
+            background: #0d1e3b;
+            border: 1px solid #244775;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px #0005;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 15px;
+            background: linear-gradient(135deg, #12316a, #174b98);
+        }
+
+        header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #c4d9fa;
+        }
+
+        main {
+            padding: 25px;
+        }
+
+        .card {
+            background: #102443;
+            border: 1px solid #28466e;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 21px;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #b9cbe4;
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+
+        .login-card {
+            max-width: 500px;
+            margin: 0 auto 20px;
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            border-radius: 8px;
+            border: 1px solid #5075a5;
+            background: #0a1931;
+            color: white;
+            font-size: 16px;
+            margin: 8px 0 14px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #3995ff;
+        }
+
+        button {
+            padding: 13px 16px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary {
+            background: #1681f8;
+        }
+
+        .btn-secondary {
+            background: #405879;
+        }
+
+        .btn-danger {
+            background: #e94355;
+        }
+
+        .btn-success {
+            background: #10a981;
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .menu-button {
+            min-height: 75px;
+            font-size: 17px;
+        }
+
+        .balance-card {
+            text-align: center;
+        }
+
+        .balance-amount {
+            color: #42e6ae;
+            font-size: 30px;
+            font-weight: bold;
+            margin-top: 15px;
+            overflow-wrap: anywhere;
+        }
+
+        .transaction-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .button-row button {
+            flex: 1;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 13px;
+            border-radius: 8px;
+            background: #0a1931;
+            border: 1px solid #28466e;
+            color: #d7e5f8;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        footer {
+            text-align: center;
+            color: #8fa9cb;
+            font-size: 13px;
+            padding: 0 15px 22px;
+        }
+        
+        footer p {
+            margin-top: 8px;
+            color: #42e6ae;
+            font-weight: bold;
+        }
+
+
+        @media (max-width: 600px) {
+            main {
+                padding: 15px;
+            }
+
+            header h1 {
+                font-size: 25px;
+            }
+
+            .menu-grid,
+            .transaction-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .menu-button {
+                min-height: 58px;
+            }
+
+            .balance-amount {
+                font-size: 25px;
+            }
+
+            .card {
+                padding: 17px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -168,6 +388,223 @@
         </footer>
     </div>
 
-    <script src="script.js"></script>
+   <script>
+        // ATM VARIABLES
+        const correctPin = "1234";
+        let balance = 5000;
+        let attempts = 0;
+        const maxAttempts = 3;
+        let isLoggedIn = false;
+        let isLocked = false;
+
+        // HTML ELEMENTS
+        const loginForm = document.getElementById("loginForm");
+        const pinInput = document.getElementById("pinInput");
+        const loginMessage = document.getElementById("loginMessage");
+
+        const loginSection = document.getElementById("loginSection");
+        const dashboard = document.getElementById("dashboard");
+
+        const balanceDisplay = document.getElementById("balanceDisplay");
+        const transactionMessage =
+            document.getElementById("transactionMessage");
+
+        const depositSection = document.getElementById("depositSection");
+        const withdrawSection = document.getElementById("withdrawSection");
+
+        // FORMAT MONEY
+        function formatMoney(amount) {
+            return amount.toLocaleString("en-PH", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        // UPDATE BALANCE DISPLAY
+        function updateBalance() {
+            balanceDisplay.textContent =
+                "PHP " + formatMoney(balance);
+        }
+
+        // SHOW TRANSACTION MESSAGE
+        function showMessage(message) {
+            transactionMessage.textContent = message;
+        }
+
+        // HIDE TRANSACTION FORMS
+        function hideTransactionForms() {
+            depositSection.classList.add("hidden");
+            withdrawSection.classList.add("hidden");
+        }
+
+        // LOGIN
+        loginForm.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            if (isLocked) {
+                return;
+            }
+
+            const enteredPin = pinInput.value;
+
+            if (enteredPin === correctPin) {
+                isLoggedIn = true;
+
+                loginSection.classList.add("hidden");
+                dashboard.classList.remove("hidden");
+
+                updateBalance();
+                showMessage("Login successful!");
+            } else {
+                attempts++;
+
+                const remaining = maxAttempts - attempts;
+
+                if (remaining > 0) {
+                    loginMessage.textContent =
+                        "Incorrect PIN! Attempts remaining: " + remaining;
+                    pinInput.value = "";
+                    pinInput.focus();
+                } else {
+                    isLocked = true;
+
+                    loginMessage.textContent =
+                        "Account Locked! Maximum login attempts reached.";
+
+                    pinInput.disabled = true;
+                    loginForm.querySelector("button").disabled = true;
+                }
+            }
+        });
+
+        // MENU BUTTONS
+        document.querySelectorAll("[data-action]").forEach(function(button) {
+            button.addEventListener("click", function() {
+                const action = button.dataset.action;
+
+                if (action === "cancel") {
+                    hideTransactionForms();
+                    showMessage("Transaction cancelled.");
+                    return;
+                }
+
+                if (!isLoggedIn) {
+                    return;
+                }
+
+                hideTransactionForms();
+
+                if (action === "balance") {
+                    updateBalance();
+                    showMessage("Your current balance is PHP " +
+                        formatMoney(balance) + ".");
+                }
+
+                else if (action === "deposit") {
+                    depositSection.classList.remove("hidden");
+                    document.getElementById("depositAmount").focus();
+                    showMessage("Enter your deposit amount.");
+                }
+
+                else if (action === "withdraw") {
+                    withdrawSection.classList.remove("hidden");
+                    document.getElementById("withdrawAmount").focus();
+                    showMessage("Enter your withdrawal amount.");
+                }
+
+                else if (action === "exit") {
+                    isLoggedIn = false;
+                    dashboard.classList.add("hidden");
+                    loginSection.classList.remove("hidden");
+
+                    attempts = 0;
+                    pinInput.value = "";
+                    pinInput.disabled = false;
+                    loginForm.querySelector("button").disabled = false;
+
+                    loginMessage.textContent =
+                        "You have 3 login attempts.";
+
+                    showMessage("Thank you for using the ATM!");
+                }
+            });
+        });
+
+        // DEPOSIT
+        document.getElementById("depositForm")
+            .addEventListener("submit", function(event) {
+                event.preventDefault();
+
+                const amount = Number(
+                    document.getElementById("depositAmount").value
+                );
+
+                if (!Number.isFinite(amount) || amount <= 0) {
+                    showMessage("Invalid deposit amount!");
+                    return;
+                }
+
+                const confirmed = confirm(
+                    "Confirm deposit of PHP " + formatMoney(amount) + "?"
+                );
+
+                if (confirmed) {
+                    balance += amount;
+                    updateBalance();
+
+                    showMessage(
+                        "Deposit successful!\nNew balance: PHP " +
+                        formatMoney(balance)
+                    );
+                } else {
+                    showMessage("Deposit cancelled.");
+                }
+
+                this.reset();
+                hideTransactionForms();
+            });
+
+        // WITHDRAW
+        document.getElementById("withdrawForm")
+            .addEventListener("submit", function(event) {
+                event.preventDefault();
+
+                const amount = Number(
+                    document.getElementById("withdrawAmount").value
+                );
+
+                if (!Number.isFinite(amount) || amount <= 0) {
+                    showMessage("Invalid withdrawal amount!");
+                    return;
+                }
+
+                if (amount > balance) {
+                    showMessage(
+                        "Insufficient balance!\nCurrent balance: PHP " +
+                        formatMoney(balance)
+                    );
+                    return;
+                }
+
+                const confirmed = confirm(
+                    "Confirm withdrawal of PHP " + formatMoney(amount) + "?"
+                );
+
+                if (confirmed) {
+                    balance -= amount;
+                    updateBalance();
+
+                    showMessage(
+                        "Withdrawal successful!\nRemaining balance: PHP " +
+                        formatMoney(balance)
+                    );
+                } else {
+                    showMessage("Withdrawal cancelled.");
+                }
+
+                this.reset();
+                hideTransactionForms();
+            });
+    </script>
 </body>
 </html>
